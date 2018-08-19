@@ -1,7 +1,61 @@
 import sys
+import random
 import argparse
 import random
 from openpyxl import load_workbook
+
+
+def random_sized_chunks(n_chunks, length):
+    stop_points = []
+    for i in range(n_chunks - 1):
+        if len(stop_points):
+            start = stop_points[-1]
+        else:
+            start = 0
+        point = random.randint(start, length - n_chunks + i)
+        while point == start:
+            # dont want to have empty chunks
+            point = random.randint(start, length - n_chunks + i)
+        stop_points.append(point)
+    # last stop point is the end of the word
+    stop_points.append(length)
+    return stop_points
+
+
+def random_sized_subwords(n_subwords, word):
+    chunks = random_sized_chunks(n_subwords, len(word))
+    start_end_points = zip([0] + chunks[:len(chunks) - 1], chunks)
+    for start, end in start_end_points:
+        yield word[start:end]
+
+
+def split_half(word):
+    middle = len(word) // 2
+    return [word[: middle],  word[middle:]]
+
+
+def generate_word_subwords(word):
+    two_subs = split_half(word)
+    third_length = len(word) // 3
+    three_subs = [word[: third_length], word[third_length: third_length * 2], word[third_length *2:]]
+    if len(word) <= 6:
+        single_chars = [ch for ch in word]
+    else:
+        single_chars = []
+
+    subword_subs = [split_half(sub) for sub in two_subs]
+    subword_subs = [item for sublist in subword_subs for item in sublist]
+
+    random_subs = []
+    random_subword_guide = [(13, 7), (11, 6), (9, 5), (7, 4)]
+    for min_len, n_subs in random_subword_guide:
+        if len(word) > min_len:
+            random_subs = list(random_sized_subwords(n_subs, word))
+            break
+
+    all_subwords = [two_subs, three_subs, subword_subs, single_chars, random_subs]
+    # remove empty results
+    return [x for x in all_subwords if x]
 
 
 def subwords(inputfilename, sheetname):
@@ -25,66 +79,13 @@ def subwords(inputfilename, sheetname):
                 continue
             #calculate category
             category =  str(cell.column)
-                    #ws.cell(cell.column + '1').value
-                    #a)category
-                    #b)type of subword
-                    #c)number of subwords
-                    #d)the correct full word
-                    #e)the sub words
-                    #example: a)/b)/c)/d)/e);
             word = cell.value
-            for i in range(0,8):
-                #check the length and the number of subwords, shorter words has lesser subwords
-                if i == 4 and len(word) <= 7:
-                    break;
-                if i == 5 and len(word) <= 9:
-                    break;
-                if i == 6 and len(word) <= 11:
-                    break;
-                if i == 7 and len(word) <= 13:
-                    break;
-                #creating the subwords
-                if i == 0:
-                    subwords = "/" + word[:len(word)//2] + "/"  + word[len(word)//2:]
-                elif i == 1:
-                    if len(word) <= 3:
-                        continue;
-                    leng = len(word)//3
-                    #all part of word are same long
-                    if len(word) % 3 == 0:
-                        subwords = "/" + word[0:leng] + "/"  + word[leng:leng*2] + "/"  + word[leng*2:]
-                    #different long parts
-                    else:
-                        leng = round(len(word)/3.0)
-                        shorterleng = len(word) - 2* leng
-                        #place the shorter substring randomly
-                        place = random.randint(1, 4)
-                        if place == 1:
-                            subwords = "/" + word[0:leng] + "/"  + word[leng:leng*2] + "/"  + word[leng*2:]
-                        elif place == 2:
-                            subwords = "/" + word[0:leng] + "/"  + word[leng:leng+shorterleng] + "/"  + word[leng+shorterleng:]
-                        else:
-                            subwords = "/" + word[0:shorterleng] + "/"  + word[shorterleng:leng+shorterleng] + "/"  + word[leng+shorterleng:]
-                elif i == 2:
-                    subs=list(word)
-                    for j in range(0, len(subs)):
-                        subwords = subwords + "/"  + subs[j]
-                elif i == 3:
-                    subs = [word[k:k+2] for k in range(0, len(word), 2)]
-                    for j in range(0, len(subs)):
-                        subwords = subwords + "/"  + subs[j]
-                else:
-                    count = 0
-                    for k in range(0,i-1):
-                        sep =random.randint(1, len(word)- i - count +k)
-                        subwords = subwords + "/"  + word[count:count+sep]
-                        count = count +sep
-                    subwords = subwords + "/"  + word[count:]
 
-                result = category + "/" + str(i+1) + "/" + str(sum(c=="/" for c in subwords)) + "/" + str(len(word)) + "/" + word + subwords + ";"
-                subwords =  ""
-                #add to result list
-                results.append((result, int(category)))
+            all_subwords = generate_word_subwords(word)
+            for subwords in all_subwords:
+                result_str = "{}/-1/{}/{}/{}/".format(category, len(subwords), word, subwords)
+                results.append((result_str, int(category)))
+
     return results
 
 
