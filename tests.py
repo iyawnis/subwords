@@ -1,5 +1,5 @@
 import unittest
-from subwords import random_sized_chunks, random_sized_subwords, generate_word_subwords
+from subwords import random_sized_chunks, random_sized_subwords, generate_word_subwords, two_letter_subwords
 
 
 class RandomChunksTestCase(unittest.TestCase):
@@ -42,6 +42,11 @@ class WordSubwordsTestCase(unittest.TestCase):
             subs = generate_word_subwords(word)
             print(subs)
             print(10 * '*')
+
+    def test_two_letter_subs(self):
+        word = 'football'
+        expected = ['fo', 'ot', 'ba', 'll']
+        self.assertEqual(list(two_letter_subwords(word)), expected)
 
     def test_football_out(self):
         word = 'football'

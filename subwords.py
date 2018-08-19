@@ -42,6 +42,11 @@ def split_half(word):
     return [word[: middle],  word[middle:]]
 
 
+def two_letter_subwords(word):
+    for i in range(0, len(word), 2):
+        yield word[i:i+2]
+
+
 def generate_word_subwords(word):
     # "Two sub words where the sub words are divided into equally long words"
     two_subs = split_half(word)
@@ -53,9 +58,8 @@ def generate_word_subwords(word):
         single_chars = [ch for ch in word]
     else:
         single_chars = []
-
-    subword_subs = [split_half(sub) for sub in two_subs]
-    subword_subs = [item for sublist in subword_subs for item in sublist]
+    # The sub words are divided into two characters each
+    two_letter_subs = two_letter_subwords(word)
 
     random_subs = []
     # "For words longer than 7 characters: The sub words are divided into 4 random length characters."
@@ -67,7 +71,7 @@ def generate_word_subwords(word):
             # This rule should be applied only once
             break
 
-    all_subwords = [two_subs, three_subs, subword_subs, single_chars, random_subs]
+    all_subwords = [two_subs, three_subs, two_letter_subs, single_chars, random_subs]
     # remove empty results
     return [x for x in all_subwords if x]
 
