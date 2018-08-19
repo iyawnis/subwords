@@ -14,6 +14,12 @@ class RandomChunksTestCase(unittest.TestCase):
 
 
 class RandomSubwordsTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print('')
+        print('RandomSubwordsTestCase')
+        print('')
+
     def test_random_subs(self):
         word = 'football'
         for x in range(5):
@@ -24,6 +30,12 @@ class RandomSubwordsTestCase(unittest.TestCase):
 class WordSubwordsTestCase(unittest.TestCase):
 
     word_list = ['footbal', 'table', 'tabletennis']
+
+    @classmethod
+    def setUpClass(cls):
+        print('')
+        print('WordSubwordsTestCase')
+        print('')
 
     def test_word_list(self):
         for word in self.word_list:

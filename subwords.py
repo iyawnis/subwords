@@ -58,7 +58,7 @@ def generate_word_subwords(word):
     return [x for x in all_subwords if x]
 
 
-def subwords(inputfilename, sheetname):
+def process_sheet(inputfilename, sheetname):
     #loading the inputfile
     workbook = load_workbook(filename=inputfilename, read_only=True)
 
@@ -107,5 +107,5 @@ parser.add_argument('--out', default='results.txt', help='The name of the file w
 if __name__ == '__main__':
 
     args = parser.parse_args()
-    results = subwords(args.input, args.sheet)
+    results = process_sheet(args.input, args.sheet)
     save_results(results, args.out)
