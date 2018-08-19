@@ -6,6 +6,11 @@ from openpyxl import load_workbook
 
 
 def random_sized_chunks(n_chunks, length):
+    """
+    Generate random stop points for breaking word into chunks.
+    This function will generate the `end` part of the start-end range
+    """
+
     stop_points = []
     for i in range(n_chunks - 1):
         if len(stop_points):
@@ -23,6 +28,9 @@ def random_sized_chunks(n_chunks, length):
 
 
 def random_sized_subwords(n_subwords, word):
+    """
+    Using a list of start-end points, generate a list of size n_subwords, for a given word
+    """
     chunks = random_sized_chunks(n_subwords, len(word))
     start_end_points = zip([0] + chunks[:len(chunks) - 1], chunks)
     for start, end in start_end_points:
@@ -35,9 +43,12 @@ def split_half(word):
 
 
 def generate_word_subwords(word):
+    # "Two sub words where the sub words are divided into equally long words"
     two_subs = split_half(word)
     third_length = len(word) // 3
+    # "Three sub words where the sub words are divided into equally long words"
     three_subs = [word[: third_length], word[third_length: third_length * 2], word[third_length *2:]]
+    # "The sub words are divided into single characters each, if the word is maximum 6 chars long"
     if len(word) <= 6:
         single_chars = [ch for ch in word]
     else:
@@ -47,10 +58,13 @@ def generate_word_subwords(word):
     subword_subs = [item for sublist in subword_subs for item in sublist]
 
     random_subs = []
+    # "For words longer than 7 characters: The sub words are divided into 4 random length characters."
+    # Repeat for 9-5, 11-6, 13-7
     random_subword_guide = [(13, 7), (11, 6), (9, 5), (7, 4)]
     for min_len, n_subs in random_subword_guide:
         if len(word) > min_len:
             random_subs = list(random_sized_subwords(n_subs, word))
+            # This rule should be applied only once
             break
 
     all_subwords = [two_subs, three_subs, subword_subs, single_chars, random_subs]
@@ -91,7 +105,7 @@ def process_sheet(inputfilename, sheetname):
 
 def save_results(results, filename):
     with open(filename, 'w', encoding='utf-8') as f:
-        #sort by category, it would be easier if iterating through cells, not rows, but openpyxl has not iter_cell function
+        #sort by category
         results = sorted(results, key=lambda student: student[1])
         #save the results
         for i in range(0,len(results)):

@@ -29,7 +29,7 @@ class RandomSubwordsTestCase(unittest.TestCase):
 
 class WordSubwordsTestCase(unittest.TestCase):
 
-    word_list = ['footbal', 'table', 'tabletennis']
+    word_list = ['football', 'table', 'tabletennis']
 
     @classmethod
     def setUpClass(cls):
@@ -43,6 +43,13 @@ class WordSubwordsTestCase(unittest.TestCase):
             print(subs)
             print(10 * '*')
 
+    def test_football_out(self):
+        word = 'football'
+        expected = [['foot', 'ball'], ['fo', 'ot', 'ball']]
+        subs = generate_word_subwords(word)
+        # Third set of subwords is random, exclude from test for now.
+        # Can add all possible combinations for smaller words in future
+        self.assertEqual(expected, subs[:2])
 
 
 if __name__ == '__main__':
