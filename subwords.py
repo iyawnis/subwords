@@ -59,21 +59,41 @@ def generate_word_subwords(word):
     else:
         single_chars = []
     # The sub words are divided into two characters each
-    two_letter_subs = two_letter_subwords(word)
+    two_letter_subs = list(two_letter_subwords(word))
 
     random_subs = []
     # "For words longer than 7 characters: The sub words are divided into 4 random length characters."
     # Repeat for 9-5, 11-6, 13-7
-    random_subword_guide = [(13, 7), (11, 6), (9, 5), (7, 4)]
-    for min_len, n_subs in random_subword_guide:
+    random_sub_key = 0
+    random_subword_guide = [(13, 7, 8), (11, 6, 7), (9, 5, 6), (7, 4, 5)]
+    for min_len, n_subs, key in random_subword_guide:
         if len(word) > min_len:
             random_subs = list(random_sized_subwords(n_subs, word))
+            random_sub_key = key
             # This rule should be applied only once
             break
 
-    all_subwords = [two_subs, three_subs, two_letter_subs, single_chars, random_subs]
-    # remove empty results
-    return [x for x in all_subwords if x]
+    return {
+        1: two_subs,
+        2: three_subs,
+        3: single_chars,
+        4: two_letter_subs,
+        random_sub_key: random_subs
+    }
+
+
+def format_result(type_of_subwords, subwords_list, category, word):
+    if not type_of_subwords or not subwords_list:
+        return None
+    subs = '/'.join(subwords_list)
+    out = {
+        'category': category,
+        'type_of_subwords': type_of_subwords,
+        'word': word,
+        'num_of_subwords': len(subwords_list),
+        'subs': subs
+    }
+    return '{category}/{type_of_subwords}/{num_of_subwords}/{word}/{subs}'.format(**out)
 
 
 def process_sheet(inputfilename, sheetname):
@@ -100,9 +120,10 @@ def process_sheet(inputfilename, sheetname):
             word = cell.value
 
             all_subwords = generate_word_subwords(word)
-            for subwords in all_subwords:
-                result_str = "{}/-1/{}/{}/{}/".format(category, len(subwords), word, subwords)
-                results.append((result_str, int(category)))
+            for type_of_subwords, subwords in all_subwords.items():
+                formatted_result = format_result(type_of_subwords, subwords, category, word)
+                if formatted_result:
+                    results.append(formatted_result)
 
     return results
 
@@ -112,8 +133,8 @@ def save_results(results, filename):
         #sort by category
         results = sorted(results, key=lambda student: student[1])
         #save the results
-        for i in range(0,len(results)):
-            print(results[i][0], file=f)
+        for line in results:
+            print(line, file=f)
     print('Creating subwords has finished. Saved result to {}'.format(filename))
 
 
