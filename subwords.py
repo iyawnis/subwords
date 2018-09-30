@@ -131,7 +131,7 @@ def process_sheet(inputfilename, sheetname):
 def save_results(results, filename):
     with open(filename, 'w', encoding='utf-8') as f:
         #sort by category
-        results = sorted(results, key=lambda student: student[1])
+        results = sorted(results, key=lambda word_line: word_line[0])
         #save the results
         for line in results:
             print(line, file=f)
