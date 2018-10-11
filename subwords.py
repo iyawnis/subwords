@@ -1,8 +1,12 @@
+from itertools import permutations
 import sys
 import random
 import argparse
 import random
 from openpyxl import load_workbook
+
+
+dictionary_words = {}
 
 
 def random_sized_chunks(n_chunks, length):
@@ -121,12 +125,24 @@ def process_sheet(inputfilename, sheetname):
 
             all_subwords = generate_word_subwords(word)
             for type_of_subwords, subwords in all_subwords.items():
+                if dictionary_words and subwords and not verify_single_word_combination(subwords, word):
+                    continue
+
                 formatted_result = format_result(type_of_subwords, subwords, category, word)
                 if formatted_result:
                     results.append(formatted_result)
 
     return results
 
+def verify_single_word_combination(subwords, original_word):
+    for combinations in permutations(subwords, len(subwords)):
+        word = ''.join(combinations).lower()
+        if word in dictionary_words and word != original_word:
+            print('Subwords generate more than one word, ignoring.')
+            print('Subwords: {} Original: {} Alternative: {}'.format(str(subwords), original_word, word))
+            print('')
+            return False
+    return True
 
 def save_results(results, filename):
     with open(filename, 'w', encoding='utf-8') as f:
@@ -142,9 +158,14 @@ parser = argparse.ArgumentParser(description='Generate subwords from input XLS s
 parser.add_argument('input', help='The XLSX file containing all the words')
 parser.add_argument('--sheet', default=None, help='The name of the sheet within input file')
 parser.add_argument('--out', default='results.txt', help='The name of the file where results are saved')
+parser.add_argument('--dict', default=None, help='The txt file to use as word dictionary. Line-separated words')
+
 
 if __name__ == '__main__':
 
     args = parser.parse_args()
+    if args.dict:
+        with open(args.dict) as dict_file:
+            dictionary_words = {word.strip().lower() for word in dict_file }
     results = process_sheet(args.input, args.sheet)
     save_results(results, args.out)
